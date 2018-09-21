@@ -1,0 +1,29 @@
+{
+  "code": 0
+  ,"msg": ""
+  ,"data": {
+    "mine": {
+      "username": "纸飞机"
+      ,"id": "100000"
+      ,"sign": "在深邃的编码世界，做一枚轻盈的纸飞机"
+      ,"avatar": "//res.layui.com/images/fly/avatar/00.jpg"
+      ,"status": "online"
+    }
+    ,"friend": [{
+      "groupname": "知名人物"
+      ,"id": 0
+      ,"list": [{
+        "username": "贤心"
+        ,"id": "100001"
+        ,"avatar": "//tva1.sinaimg.cn/crop.0.0.118.118.180/5db11ff4gw1e77d3nqrv8j203b03cweg.jpg"
+        ,"sign": "这些都是测试数据，实际使用请严格按照该格式返回"
+        ,"status": "online"
+      }]
+    }]
+    ,"group": [{
+      "groupname": "前端群"
+      ,"id": "101"
+      ,"avatar": "//tva1.sinaimg.cn/crop.0.0.200.200.50/006q8Q6bjw8f20zsdem2mj305k05kdfw.jpg"
+    }]
+  }
+}

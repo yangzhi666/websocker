@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.runrunfast.websocket.mapper.MineMapper">
+
+    <!--群列表-->
+    <resultMap id="groupResultMap" type="com.runrunfast.websocket.pojo.Group">
+        <id column="id" property="id"/>
+        <result column="groupname" property="groupname"/>
+        <result column="avatar" property="avatar"/>
+    </resultMap>
+
+    <!--好友信息查询-->
+    <resultMap id="friendMessageResultMap" type="com.runrunfast.websocket.pojo.Mine">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="sign" property="sign"/>
+        <result column="avatar" property="avatar"/>
+        <result column="status" property="status"/>
+    </resultMap>
+
+    <!--分组列表查询-->
+    <resultMap id="groupingResultMap" type="com.runrunfast.websocket.pojo.Grouping">
+        <id column="group_id" property="id"/>
+        <result column="group_name" property="groupname"/>
+        <collection property="list" column="group_id" select="selectFriends"></collection>
+    </resultMap>
+
+    <!--个人信息查询-->
+    <resultMap id="myMessageResultMap" type="com.runrunfast.websocket.pojo.Mine">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="sign" property="sign"/>
+        <result column="avatar" property="avatar"/>
+        <result column="status" property="status"/>
+    </resultMap>
+
+    <sql id="base_column_list">
+        my_message.id,username,sign,avatar,status
+    </sql>
+
+    <!--查询群列表-->
+    <select id="selectGroups" parameterType="java.lang.String" resultMap="groupResultMap">
+        select id,groupname,avatar from my_group WHERE my_group.my_id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <!--查询好友列表-->
+    <select id="selectFriends" parameterType="java.lang.String" resultMap="friendMessageResultMap">
+        select <include refid="base_column_list"/> from my_message
+        left join my_friend on my_message.id = my_friend.my_id
+        WHERE
+        my_friend.grouping_id=#{id,jdbcType=VARCHAR}
+    </select>
+
+    <!--我的分组查询-->
+    <select id="selectGroupings" parameterType="java.lang.String" resultMap="groupingResultMap">
+        select group_id,group_name,my_id from my_grouping WHERE my_id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <!--个人信息查询-->
+    <select id="selectMine" parameterType="java.lang.String" resultMap="myMessageResultMap">
+        select <include refid="base_column_list"/> from my_message where my_message.id=#{id,jdbcType=VARCHAR}
+    </select>
+
+</mapper>

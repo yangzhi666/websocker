@@ -1,0 +1,76 @@
+server:
+  port: 80
+  servlet:
+    context-path: /websocker
+  tomcat:
+    uri-encoding: utf-8
+# 数据库设置
+spring:
+  datasource:
+      type: com.alibaba.druid.pool.DruidDataSource
+      driver-class-name: com.mysql.jdbc.Driver
+      url: jdbc:mysql://localhost:3306/websocker?useUnicode=true&characterEncoding=utf8&allowMultiQueries=true
+      username: root
+      password: zzm030010
+      druid:
+        # ???????????
+        initial-size: 5
+        min-idle: 5
+        maxActive: 20
+        # ?????????????
+        maxWait: 60000
+        # ???????????????????????????????
+        timeBetweenEvictionRunsMillis: 60000
+        # ??????????????????????
+        minEvictableIdleTimeMillis: 300000
+        validationQuery: SELECT 1 FROM DUAL
+        testWhileIdle: true
+        testOnBorrow: false
+        testOnReturn: false
+        # ??PSCache??????????PSCache???
+        poolPreparedStatements: true
+        maxPoolPreparedStatementPerConnectionSize: 20
+        # ?????????filters????????sql?????'wall'?????
+        filters: stat,wall
+        # ??connectProperties?????mergeSql????SQL??
+        connectionProperties: druid.stat.mergeSql\=true;druid.stat.slowSqlMillis\=5000
+        # ??DruidStatFilter
+        web-stat-filter:
+          enabled: true
+          url-pattern: "/*"
+          exclusions: "*.js,*.gif,*.jpg,*.bmp,*.png,*.css,*.ico,/druid/*"
+        # ??DruidStatViewServlet
+        stat-view-servlet:
+          url-pattern: "/druid/*"
+          # IP???(????????????????)
+          allow: 127.0.0.1
+          # IP??? (??????deny???allow)
+          deny: 192.168.1.73
+          #  ??HTML?????Reset All???
+          reset-enable: false
+          # ???
+          login-username: admin
+          # ????
+          login-password: 123456
+  thymeleaf:
+      cache: false
+      encoding: UTF-8
+      mode: HTML5
+      prefix: classpath:/templates/
+      suffix: .html
+mybatis-plus:
+  mapper-locations: classpath:mapping/*Mapper.xml
+  typeAliasesPackage: com.runrunfast.websocket.pojo
+  global-config:
+    id-type: 2
+    field-strategy: 2
+    db-column-underline: true
+    refresh-mapper: true
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: true
+logging:
+  level:
+    com.web.prepay: debug
+  file: /websoker.log
+  root: INFO
