@@ -6,6 +6,7 @@ import com.runrunfast.websocket.pojo.Grouping;
 import com.runrunfast.websocket.pojo.Mine;
 import org.apache.ibatis.annotations.Param;
 
+import javax.validation.constraints.Min;
 import java.util.List;
 
 /**
@@ -43,4 +44,11 @@ public interface MineMapper extends BaseMapper<Mine> {
      * @return
      */
     List<Group> selectGroups(@Param("id") String id);
+
+    /**
+     * 获取群员
+     * @param id
+     * @return
+     */
+    List<Mine> getGroupMembers(@Param("id") String id);
 }

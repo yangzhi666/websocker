@@ -61,4 +61,15 @@
         select <include refid="base_column_list"/> from my_message where my_message.id=#{id,jdbcType=VARCHAR}
     </select>
 
+    <!--获取群员-->
+    <select id="getGroupMembers" parameterType="java.lang.String" resultMap="myMessageResultMap">
+        select <include refid="base_column_list"/>
+
+        from my_message
+
+        left join group_member on group_member.my_id = my_message.id
+
+        where group_member.group_id=#{id,jdbcType=VARCHAR}
+    </select>
+
 </mapper>

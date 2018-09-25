@@ -42,4 +42,9 @@ public class MineServiceImpl extends ServiceImpl<MineMapper,Mine> implements Min
     public List<Group> selectGroups(String id) {
         return mineMapper.selectGroups(id);
     }
+
+    @Override
+    public List<Mine> getGroupMembers(String id) {
+        return mineMapper.getGroupMembers(id);
+    }
 }

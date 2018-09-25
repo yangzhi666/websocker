@@ -8,7 +8,9 @@
 <body>
 <script type="text/javascript" src="../layui.js" ></script>
 <script type="text/javascript">
-    layui.use('layim', function(layim){
+    layui.use(['layim','jquery'], function(layim){
+        var layim = layui.layim,$=layui.jquery,layer = layui.layer;
+
         //先来个客服模式压压精
         layim.config({
             brief: false, //是否简约模式（如果true则不显示主面板）
@@ -18,15 +20,95 @@
             isVideo: true,
             notice: true,
             skin:[
-                'http://img.zcool.cn/community/0389822590d681ba801214550b3e12a.jpg',
-                'http://g.hiphotos.baidu.com/zhidao/pic/item/6a600c338744ebf814066acedbf9d72a6159a7cf.jpg'
+                "https://res.layui.com/layui/dist/css/modules/layim/skin/3.jpg"
             ],
+            initSkin: '3.jpg', //1-5 设置初始背景
             //获取主面板列表信息
             init: {
-                url: 'all/100000' //接口地址（返回的数据格式见下文）
+                url: 'all/100000' //接口地址
                 ,type: 'get' //默认get，一般可不填
                 ,data: {} //额外参数
+            }//获取群员接口
+            ,members: {
+                url: 'getGroupMembers' //接口地址
+                ,type: 'get' //默认get，一般可不填
             }
+        });
+
+
+        /**
+         * 添加客服机器人
+         */
+        $.ajax({
+            type:"get",
+            url:"getOne/000000",
+            success:function(result){
+                if(result.code == 0){
+                    //添加体验版客服机器人
+                    layim.chat({
+                        name: result.data.username
+                        ,type: 'friend'
+                        ,avatar: result.data.avatar
+                        ,id: -2
+                    });
+                    if(result.data.status=="online"){
+                        layim.setChatStatus('<span style="color:#FF5722;">在线</span>');
+                    }else{
+                        layim.setChatStatus('<span style="color:#FF5722;">隐身</span>');
+                    }
+                }
+            }
+        });
+
+
+        //监听发送消息
+        layim.on('sendMessage', function(data){
+
+            var To = data.to;
+
+            var mine = data.mine;
+
+            if(To.type === 'friend'){
+                layim.setChatStatus('<span style="color:#FF5722;">对方正在输入。。。</span>');
+            }
+            $.ajax({
+                type:"get",
+                url:"getTulingMessage/"+mine.id+"/"+mine.content,
+                success:function(result){
+                    var text = "";
+                    if(result.code == 0){
+                        for(var i = 0;i < result.data.length;i++){
+                            if(result.data[i].hasOwnProperty("url")){
+                                layer.open({
+                                    type: 2,
+                                    offset: 'l',
+                                    title: '【浏览】',
+                                    shadeClose: true,
+                                    shade: false,
+                                    maxmin: true, //开启最大化最小化按钮
+                                    area: ['400px', '100%'],
+                                    content:result.data[i].url
+                                });
+                            }else{
+                                if(result.data[i].hasOwnProperty("image")){
+                                    text += result.data[i].image;
+                                }else{
+                                    text += result.data[i].text;
+                                }
+                            }
+                        }
+                        var obj = {
+                            username: To.name
+                            ,avatar: To.avatar
+                            ,id: To.id
+                            ,type: To.type
+                            ,content: text
+                        };
+                        layim.setChatStatus('<span style="color:green;">在线</span>');
+                        layim.getMessage(obj);
+                    }
+                }
+            });
         });
     });
 </script>

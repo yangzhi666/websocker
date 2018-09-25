@@ -42,4 +42,11 @@ public interface MineService extends IService<Mine> {
      * @return
      */
     List<Group> selectGroups(String id);
+
+    /**
+     * 获取群员
+     * @param id
+     * @return
+     */
+    List<Mine> getGroupMembers(String id);
 }
