@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8"/>
-    <title>聊天室</title>
+    <title>二十一天聊天室</title>
     <link rel="stylesheet" href="../../css/layui.css" media="all"/>
 </head>
 <body>
@@ -42,13 +42,26 @@
         //接收消息
         websocket.onmessage = function(event){
             var content = JSON.parse(event.data);
-            obj = {
-                username: content.mine.username
-                ,avatar: content.mine.avatar
-                ,id: content.mine.id
-                ,type: content.type
-                ,content: content.mine.content
-            };
+            if(content.type == "friend"){
+                //单聊
+                obj = {
+                    username: content.mine.username
+                    ,avatar: content.mine.avatar
+                    ,id: content.mine.id
+                    ,type: content.type
+                    ,content: content.mine.content
+                };
+            }
+            if(content.type == "group"){
+                //单聊
+                obj = {
+                    username: content.mine.username
+                    ,avatar: content.mine.avatar
+                    ,id: content.id
+                    ,type: content.type
+                    ,content: content.mine.content
+                };
+            }
             layim.getMessage(obj);
         };
 
@@ -131,7 +144,7 @@
                                     layer.open({
                                         type: 2,
                                         offset: 'l',
-                                        title: '【浏览】',
+                                        title: "["+mine.content+"]",
                                         shadeClose: true,
                                         shade: false,
                                         maxmin: true, //开启最大化最小化按钮
@@ -154,7 +167,7 @@
                                     layer.open({
                                         type: 1 //Page层类型
                                         ,area: ['900px', '500px']
-                                        ,title: '[预览]'
+                                        ,title: "["+mine.content+"]"
                                         ,shade: false //遮罩透明度
                                         ,maxmin: true //允许全屏最小化
                                         ,anim: 1 //0-6的动画形式，-1不开启
@@ -194,7 +207,11 @@
             }
             //单聊
             if(To.type == "friend"){
-                data.type = "friend";
+                //发送消息
+                send(JSON.stringify(data));
+            }
+            //群聊
+            if(To.type == "group"){
                 //发送消息
                 send(JSON.stringify(data));
             }

@@ -6,9 +6,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 @MapperScan("com.runrunfast.websocket.mapper")
-public class WebsocketApplication {
+public class WebIMApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(WebsocketApplication.class, args);
+		SpringApplication.run(WebIMApplication.class, args);
 	}
 }

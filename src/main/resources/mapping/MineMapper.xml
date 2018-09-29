@@ -40,7 +40,13 @@
 
     <!--查询群列表-->
     <select id="selectGroups" parameterType="java.lang.String" resultMap="groupResultMap">
-        select id,groupname,avatar from my_group WHERE my_group.my_id = #{id,jdbcType=VARCHAR}
+        select my_group.id,my_group.groupname,my_group.avatar
+
+        from my_group
+
+        LEFT JOIN group_member on my_group.id = group_member.group_id
+
+        WHERE group_member.my_id = #{id,jdbcType=VARCHAR}
     </select>
 
     <!--查询好友列表-->
