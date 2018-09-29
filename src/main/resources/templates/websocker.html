@@ -1,20 +1,88 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-4.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8"/>
     <title>聊天室</title>
-    <link rel="stylesheet" href="../css/layui.css" media="all"/>
+    <link rel="stylesheet" href="../../css/layui.css" media="all"/>
 </head>
 <body>
-<script type="text/javascript" src="../layui.js" ></script>
+<script type="text/javascript" src="../../layui.js" ></script>
 <script type="text/javascript">
     layui.use(['layim','jquery'], function(layim){
+
+        var username = '[[${username}]]';
+
         var layim = layui.layim,$=layui.jquery,layer = layui.layer;
+
+        var websocket = null;
+
+        //判断当前浏览器是否支持WebSocket
+        if('WebSocket' in window){
+            websocket = new WebSocket("ws://localhost:8080/websocket/"+username);
+        }
+        else{
+            alert('您的浏览器不支持websocker')
+        }
+
+        //连接发生错误的回调方法
+        websocket.onerror = function(){
+            setMessageInnerHTML("连接失败");
+        };
+
+        //连接成功建立的回调方法
+        websocket.onopen = function(event){
+
+        };
+
+        /*//接收到消息的回调方法
+        websocket.onmessage = function(event){
+            setMessageInnerHTML(JSON.parse(event.data));
+        };*/
+
+        //接收消息
+        websocket.onmessage = function(event){
+            var content = JSON.parse(event.data);
+            obj = {
+                username: content.mine.username
+                ,avatar: content.mine.avatar
+                ,id: content.mine.id
+                ,type: content.type
+                ,content: content.mine.content
+            };
+            layim.getMessage(obj);
+        };
+
+        //连接关闭的回调方法
+        websocket.onclose = function(){
+            websocket.close();
+        };
+
+        //监听窗口关闭事件，当窗口关闭时，主动去关闭websocket连接，防止连接还没断开就关闭窗口，server端会抛异常。
+        window.onbeforeunload = function(){
+            websocket.close();
+        };
+
+        //将消息显示在网页上
+        function setMessageInnerHTML(innerHTML){
+            var obj = {
+                username: innerHTML.mine.username
+                ,avatar: innerHTML.mine.avatar
+                ,id: innerHTML.mine.id
+                ,type: innerHTML.mine.type
+                ,content: innerHTML.mine.content
+            };
+            layim.getMessage(obj);
+        }
+
+        //发送消息
+        function send(message){
+            websocket.send(message);
+        }
 
         //先来个客服模式压压精
         layim.config({
             brief: false, //是否简约模式（如果true则不显示主面板）
-            title: "穷的很稳定",
+            title: username,
             min: false,
             isAudio: true,
             isVideo: true,
@@ -25,41 +93,16 @@
             initSkin: '3.jpg', //1-5 设置初始背景
             //获取主面板列表信息
             init: {
-                url: 'all/100000' //接口地址
+                url: '../all/'+username //接口地址
                 ,type: 'get' //默认get，一般可不填
                 ,data: {} //额外参数
             }//获取群员接口
             ,members: {
-                url: 'getGroupMembers' //接口地址
+                url: '../getGroupMembers' //接口地址
                 ,type: 'get' //默认get，一般可不填
             }
+
         });
-
-
-        /**
-         * 添加客服机器人
-         */
-        $.ajax({
-            type:"get",
-            url:"getOne/000000",
-            success:function(result){
-                if(result.code == 0){
-                    //添加体验版客服机器人
-                    layim.chat({
-                        name: result.data.username
-                        ,type: 'friend'
-                        ,avatar: result.data.avatar
-                        ,id: -2
-                    });
-                    if(result.data.status=="online"){
-                        layim.setChatStatus('<span style="color:#FF5722;">在线</span>');
-                    }else{
-                        layim.setChatStatus('<span style="color:#FF5722;">隐身</span>');
-                    }
-                }
-            }
-        });
-
 
         //监听发送消息
         layim.on('sendMessage', function(data){
@@ -68,47 +111,93 @@
 
             var mine = data.mine;
 
-            if(To.type === 'friend'){
-                layim.setChatStatus('<span style="color:#FF5722;">对方正在输入。。。</span>');
-            }
-            $.ajax({
-                type:"get",
-                url:"getTulingMessage/"+mine.id+"/"+mine.content,
-                success:function(result){
-                    var text = "";
-                    if(result.code == 0){
-                        for(var i = 0;i < result.data.length;i++){
-                            if(result.data[i].hasOwnProperty("url")){
-                                layer.open({
-                                    type: 2,
-                                    offset: 'l',
-                                    title: '【浏览】',
-                                    shadeClose: true,
-                                    shade: false,
-                                    maxmin: true, //开启最大化最小化按钮
-                                    area: ['400px', '100%'],
-                                    content:result.data[i].url
-                                });
-                            }else{
-                                if(result.data[i].hasOwnProperty("image")){
+            var obj = {};
+
+            //判断是客服还是其他什么
+            if(To.id == '000000'){
+                //customerService 客服 friend 朋友 group 群聊
+                if(To.type === 'friend' || To.type === 'group'){
+                    layim.setChatStatus('<span style="color:#FF5722;">对方正在输入。。。</span>');
+                }
+                //智能机器人
+                $.ajax({
+                    type:"get",
+                    url:"../getTulingMessage/"+mine.id+"/"+mine.content,
+                    success:function(result){
+                        var text = "";
+                        if(result.code == 0){
+                            for(var i = 0;i < result.data.length;i++){
+                                if(result.data[i].hasOwnProperty("url")){
+                                    layer.open({
+                                        type: 2,
+                                        offset: 'l',
+                                        title: '【浏览】',
+                                        shadeClose: true,
+                                        shade: false,
+                                        maxmin: true, //开启最大化最小化按钮
+                                        area: ['400px', '100%'],
+                                        content:result.data[i].url
+                                    });
+                                }else if(result.data[i].hasOwnProperty("image")){
                                     text += result.data[i].image;
-                                }else{
+                                }else if(result.data[i].hasOwnProperty("news")){
+                                    var html = "";
+                                    var josnStr = $.parseJSON(result.data[i].news);
+                                    for(var r = 0;r < josnStr.length;r++){
+                                        html += "<tr>\n" +
+                                            "        <td>"+josnStr[r].name+"</td>\n" +
+                                            "        <td>"+josnStr[r].info+"</td>\n" +
+                                            "        <td><a class=\"layui-btn layui-btn-xs layui-btn-primary\" href='"+josnStr[r].detailurl+"' target='_Blank'>点击访问</a></td>\n" +
+                                            "        <td>"+josnStr[r].detailurl+"</td>\n" +
+                                            "      </tr>";
+                                    }
+                                    layer.open({
+                                        type: 1 //Page层类型
+                                        ,area: ['900px', '500px']
+                                        ,title: '[预览]'
+                                        ,shade: false //遮罩透明度
+                                        ,maxmin: true //允许全屏最小化
+                                        ,anim: 1 //0-6的动画形式，-1不开启
+                                        ,content: "<div style='padding:10px;'><table class=\"layui-table\">\n" +
+                                        "    <colgroup>\n" +
+                                        "      <col width=\"150\">\n" +
+                                        "      <col width=\"150\">\n" +
+                                        "      <col width=\"200\">\n" +
+                                        "      <col>\n" +
+                                        "    </colgroup>\n" +
+                                        "    <thead>\n" +
+                                        "      <tr>\n" +
+                                        "        <th>标题</th>\n" +
+                                        "        <th>来源</th>\n" +
+                                        "        <th>操作</th>\n" +
+                                        "        <th>分享链接</th>\n" +
+                                        "      </tr> \n" +
+                                        "    </thead>\n" +
+                                        "    <tbody>" +html+"</tbody></table></div>"
+                                    });
+                                }else if(result.data[i].hasOwnProperty("text")){
                                     text += result.data[i].text;
                                 }
                             }
+                            obj = {
+                                username: To.name
+                                ,avatar: To.avatar
+                                ,id: To.id
+                                ,type: To.type
+                                ,content: text
+                            };
+                            layim.setChatStatus('<span style="color:green;">在线</span>');
+                            layim.getMessage(obj);
                         }
-                        var obj = {
-                            username: To.name
-                            ,avatar: To.avatar
-                            ,id: To.id
-                            ,type: To.type
-                            ,content: text
-                        };
-                        layim.setChatStatus('<span style="color:green;">在线</span>');
-                        layim.getMessage(obj);
                     }
-                }
-            });
+                });
+            }
+            //单聊
+            if(To.type == "friend"){
+                data.type = "friend";
+                //发送消息
+                send(JSON.stringify(data));
+            }
         });
     });
 </script>

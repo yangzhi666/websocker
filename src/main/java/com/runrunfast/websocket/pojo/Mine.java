@@ -22,4 +22,6 @@ public class Mine implements Serializable {
     private String sign;
     private String avatar;
     private String status;
+    private String number;
+    private String password;
 }

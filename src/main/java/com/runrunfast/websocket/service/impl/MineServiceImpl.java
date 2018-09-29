@@ -1,6 +1,5 @@
 package com.runrunfast.websocket.service.impl;
 
-import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.runrunfast.websocket.mapper.MineMapper;
 import com.runrunfast.websocket.pojo.Group;
 import com.runrunfast.websocket.pojo.Grouping;
@@ -18,14 +17,14 @@ import java.util.List;
  * @Date: <P>CREATE IS 2018/9/21 16:53</P>
  **/
 @Service
-public class MineServiceImpl extends ServiceImpl<MineMapper,Mine> implements MineService {
+public class MineServiceImpl implements MineService {
 
     @Autowired
     private MineMapper mineMapper;
 
     @Override
-    public Mine selectMine(String id) {
-        return mineMapper.selectMine(id);
+    public Mine selectMine(String username) {
+        return mineMapper.selectMine(username);
     }
 
     @Override
@@ -46,5 +45,10 @@ public class MineServiceImpl extends ServiceImpl<MineMapper,Mine> implements Min
     @Override
     public List<Mine> getGroupMembers(String id) {
         return mineMapper.getGroupMembers(id);
+    }
+
+    @Override
+    public Mine selectMineNumber(String number) {
+        return mineMapper.selectMineNumber(number);
     }
 }

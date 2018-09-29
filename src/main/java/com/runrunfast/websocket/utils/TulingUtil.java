@@ -72,8 +72,6 @@ public class TulingUtil {
          */
         String data = OkHttpUtil.postJsonParams(API_URL, transJosn(text,userId).toJSONString());
 
-        System.out.println(ForMatJSONStr.format(data));
-
         return JSONObject.parseObject(data);
 
     }

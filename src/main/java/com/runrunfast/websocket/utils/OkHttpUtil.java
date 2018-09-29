@@ -1,7 +1,6 @@
 package com.runrunfast.websocket.utils;
 
 import okhttp3.*;
-import org.apache.tomcat.util.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,22 +10,30 @@ import java.net.URLDecoder;
 import java.util.Iterator;
 import java.util.Map;
 
+/***
+ * <p>@description: <p>第三方接口请求工具类</p>
+ * <p>@author: <H2>james<H2></p>
+ * <p>@date: <P>2018/9/27 10:38</P>
+ */
 public class OkHttpUtil {
+
+    /**
+     * 声明日志对象
+     */
     private static final Logger logger = LoggerFactory.getLogger(OkHttpUtil.class);
 
     /**
-     * get
-     * @param url     请求的url
-     * @param queries 请求的参数，在浏览器？后面的数据，没有可以传null
-     * @return
+     * <p>get请求参数拼接，返回拼接后的请求参数</p>
+     * <p>@param url</p>
+     * <p>@param queries</p>
+     * <p>@return</p>
      */
-    public static  String get(String url, Map<String, String> queries) {
-        String responseBody = "";
+    private static StringBuffer getStringBuffer(String url,Map<String, String> queries){
         StringBuffer sb = new StringBuffer(url);
         if (queries != null && queries.keySet().size() > 0) {
             boolean firstFlag = true;
             Iterator iterator = queries.entrySet().iterator();
-            while (iterator.hasNext()) {
+            while(iterator.hasNext()) {
                 Map.Entry entry = (Map.Entry<String, String>) iterator.next();
                 if (firstFlag) {
                     sb.append("?" + entry.getKey() + "=" + entry.getValue());
@@ -36,37 +43,65 @@ public class OkHttpUtil {
                 }
             }
         }
-        Request request = new Request.Builder()
-                .url(sb.toString())
-                .build();
-        Response response = null;
-        try {
-            OkHttpClient okHttpClient = new OkHttpClient();
-            response = okHttpClient.newCall(request).execute();
-            int status = response.code();
-           logger.info("请求状态："+status);
-            if (response.isSuccessful()) {
-                return response.body().string();
-            }
-        } catch (Exception e) {
-            logger.error("okhttp3 put error >> ex = {}", e.getStackTrace());
-        } finally {
-            if (response != null) {
-                response.close();
-            }
-        }
-        return responseBody;
+        logger.info("[参数拼接后的结果]{}","["+sb+"]");
+        return sb;
     }
 
     /**
-     * post
-     *
-     * @param url    请求的url
-     * @param params post form 提交的参数
-     * @return
+     * <p>执行请求，并返回请求信息</p>
+     * <p>@param request</p>
+     * <p>@return</p>
+     */
+    private static String executionRequest(Request request){
+        //申明返回信息
+        Response response = null;
+        try {
+            //建立请求对象
+            OkHttpClient okHttpClient = new OkHttpClient();
+            //执行请求并放回执行结果
+            response = okHttpClient.newCall(request).execute();
+            //判断执行结果是否成功
+            if (response.isSuccessful()) {
+                //成功，返回结果
+                return response.body().string();
+            }
+        } catch (Exception e) {
+            logger.error("[请求状态]["+ response.code()+"]-","[请求错误信息]{"+e.getMessage()+"}");
+        } finally {
+            //判断返回的信息是否为空
+            if (response != null) {
+                //不为空，关闭流
+                response.close();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * <p>get 请求</p>
+     * <p>@param url     请求的url</p>
+     * <p>@param queries 请求的参数，在浏览器？后面的数据，没有可以传null</p>
+     * <p>@return</p>
+     */
+    public static String get(String url, Map<String, String> queries) {
+
+        //获取路径参数
+        StringBuffer sb = getStringBuffer(url,queries);
+
+        //建立请求信息
+        Request request = new Request.Builder().url(sb.toString()).build();
+
+        //执行请求并返回请求结果
+        return executionRequest(request);
+    }
+
+    /**
+     * <p>post 请求</p>
+     * <p>@param url    请求的url</p>
+     * <p>@param params post form 提交的参数</p>
+     * <p>@return </p>
      */
     public static String post(String url, Map<String, String> params) throws IOException {
-        String responseBody = null;
         FormBody.Builder builder = new FormBody.Builder();
         //添加参数
         if (params != null && params.keySet().size() > 0) {
@@ -77,153 +112,82 @@ public class OkHttpUtil {
             }
         }
         Request request = new Request.Builder().url(url).post(builder.build()).build();
-        OkHttpClient okHttpClient = new OkHttpClient();
-        Response response = okHttpClient.newCall(request).execute();
-        int status = response.code();
-        if (response.isSuccessful()) {
-            logger.info("[请\t\t求\t路\t径]{}","["+url+"]");
-            logger.info("[请\t\t求\t状\t态]{}","["+status+"]");
-            return response.body().string();
-        }
-        response.close();
-        return responseBody;
+        return executionRequest(request);
     }
 
     /**
-     * get
-     * @param url     请求的url
-     * @param queries 请求的参数，在浏览器？后面的数据，没有可以传null
-     * @return
+     * <p>get</p>
+     * <p>@param url     请求的url</p>
+     * <p>@param queries 请求的参数，在浏览器？后面的数据，没有可以传null</p>
+     * <p>@return</p>
      */
     public static String getForHeader(String url, Map<String, String> queries) {
-        String responseBody = "";
-        StringBuffer sb = new StringBuffer(url);
-        if (queries != null && queries.keySet().size() > 0) {
-            boolean firstFlag = true;
-            Iterator iterator = queries.entrySet().iterator();
-            while (iterator.hasNext()) {
-                Map.Entry entry = (Map.Entry<String, String>) iterator.next();
-                if (firstFlag) {
-                    sb.append("?" + entry.getKey() + "=" + entry.getValue());
-                    firstFlag = false;
-                } else {
-                    sb.append("&" + entry.getKey() + "=" + entry.getValue());
-                }
-            }
-        }
-        Request request = new Request.Builder()
-                .addHeader("key", "value")
-                .url(sb.toString())
-                .build();
-        Response response = null;
-        try {
-            OkHttpClient okHttpClient = new OkHttpClient();
-            response = okHttpClient.newCall(request).execute();
-            int status = response.code();
-            if (response.isSuccessful()) {
-                return response.body().string();
-            }
-        } catch (Exception e) {
-            logger.error("okhttp3 put error >> ex = {}", e.getMessage());
-        } finally {
-            if (response != null) {
-                response.close();
-            }
-        }
-        return responseBody;
+
+        //得到请求参数
+        StringBuffer sb = getStringBuffer(url,queries);
+
+        //建立请求信息
+        Request request = new Request.Builder().addHeader("key", "value").url(sb.toString()).build();
+
+        //执行请求并返回请求结果
+        return executionRequest(request);
     }
 
     /**
-     * Post请求发送JSON数据....{"name":"zhangsan","pwd":"123456"}
-     * 参数一：请求Url
-     * 参数二：请求的JSON
-     * 参数三：请求回调
+     * <p>Post请求，发送JSON数据</p>
+     * <p>@param url 请求路径</p>
+     * <p>@param jsonParams 请求参数</p>
+     * <p>@return</p>
      */
     public static String postJsonParams(String url, String jsonParams) {
-        String responseBody = "";
+
+        //设置请求内容类型
         RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonParams);
-        Request request = new Request.Builder()
-                .url(url)
-                .post(requestBody)
-                .build();
-        Response response = null;
-        try {
-            OkHttpClient okHttpClient = new OkHttpClient();
-            response = okHttpClient.newCall(request).execute();
-            int status = response.code();
-            if (response.isSuccessful()) {
-                return response.body().string();
-            }
-        } catch (Exception e) {
-            logger.error("okhttp3 post error >> ex = {}", e.getStackTrace());
-        } finally {
-            if (response != null) {
-                response.close();
-            }
-        }
-        return responseBody;
+
+        //建立请求信息
+        Request request = new Request.Builder().url(url).post(requestBody).build();
+
+        //执行请求并返回请求结果
+        return executionRequest(request);
     }
 
     /**
-     * Post请求发送xml数据....
-     * 参数一：请求Url
-     * 参数二：请求的xmlString
-     * 参数三：请求回调
+     * <p>Post请求，发送xml数据</p>
+     * <p>@param url  请求路径</p>
+     * <p>@param xml  请求参数</p>
+     * <p>@return</p>
      */
     public static String postXmlParams(String url, String xml) {
-        String responseBody = "";
+
+        //设置请求内容类型
         RequestBody requestBody = RequestBody.create(MediaType.parse("application/xml; charset=utf-8"), xml);
-        Request request = new Request.Builder()
-                .url(url)
-                .post(requestBody)
-                .build();
-        Response response = null;
-        try {
-            OkHttpClient okHttpClient = new OkHttpClient();
-            response = okHttpClient.newCall(request).execute();
-            int status = response.code();
-            if (response.isSuccessful()) {
-                return response.body().string();
-            }
-        } catch (Exception e) {
-            logger.error("okhttp3 post error >> ex = {}", e.getStackTrace());
-        } finally {
-            if (response != null) {
-                response.close();
-            }
-        }
-        return responseBody;
+
+        //建立请求信息
+        Request request = new Request.Builder().url(url).post(requestBody).build();
+
+        //执行请求并返回请求结果
+        return executionRequest(request);
     }
 
     /**
-     * URL编码（utf-8）
-     * 加码
-     * @param source
-     * @return
+     * <p>URL编码（utf-8）</p>
+     * <p>加码</p>
+     * <p>@param source</p>
+     * <p>@return</p>
      */
-    public static String urlEncodeUTF8(String source) {
-        String result = source;
-        try {
-            result = java.net.URLEncoder.encode(source, "utf-8");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        return result;
+    public static String urlEncodeUTF8(String source) throws UnsupportedEncodingException {
+
+        return java.net.URLEncoder.encode(source, "utf-8");
     }
 
     /**
-     * URL编码（utf-8）
-     * 解码
-     * @param source
-     * @return
+     * <p>URL编码（utf-8）</p>
+     * <p>解码</p>
+     * <p>@param source</p>
+     * <p>@return</p>
      */
-    public static String urlDecodeUTF8(String source) {
-        String result = source;
-        try {
-            result =  URLDecoder.decode(source, "utf-8");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        return result;
+    public static String urlDecodeUTF8(String source) throws UnsupportedEncodingException {
+
+        return URLDecoder.decode(source, "utf-8");
     }
 }

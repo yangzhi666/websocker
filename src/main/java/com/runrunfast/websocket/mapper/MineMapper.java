@@ -1,12 +1,9 @@
 package com.runrunfast.websocket.mapper;
 
-import com.baomidou.mybatisplus.mapper.BaseMapper;
 import com.runrunfast.websocket.pojo.Group;
 import com.runrunfast.websocket.pojo.Grouping;
 import com.runrunfast.websocket.pojo.Mine;
 import org.apache.ibatis.annotations.Param;
-
-import javax.validation.constraints.Min;
 import java.util.List;
 
 /**
@@ -15,14 +12,14 @@ import java.util.List;
  * @Description: <P>添加说明</P>
  * @Date: <P>CREATE IS 2018/9/21 16:52</P>
  **/
-public interface MineMapper extends BaseMapper<Mine> {
+public interface MineMapper {
 
     /**
-     * 个人信息查询 个人id
-     * @param id
+     * 个人信息查询 根据昵称username
+     * @param username
      * @return
      */
-    Mine selectMine(@Param("id") String id);
+    Mine selectMine(@Param("username") String username);
 
     /**
      * 个人分组查询
@@ -51,4 +48,11 @@ public interface MineMapper extends BaseMapper<Mine> {
      * @return
      */
     List<Mine> getGroupMembers(@Param("id") String id);
+
+    /**
+     * 根据账号查询个人信息
+     * @param number
+     * @return
+     */
+    Mine selectMineNumber(@Param("number") String number);
 }

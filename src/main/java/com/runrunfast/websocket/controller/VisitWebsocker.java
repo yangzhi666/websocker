@@ -10,10 +10,12 @@ import com.runrunfast.websocket.service.MineService;
 import com.runrunfast.websocket.utils.TulingUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,23 +34,24 @@ public class VisitWebsocker {
     @Autowired
     private MineService mineService;
 
-    @GetMapping("/index")
-    public String visitWebsocker(){
+    @GetMapping("/index/{username}")
+    public String visitWebsocker(@PathVariable String username,Model model){
+        model.addAttribute("username",username);
         return "websocker";
     }
 
     /**
      * 查询单个人的信息
      */
-    @GetMapping("/getOne/{id}")
+    @GetMapping("/getOne/{username}")
     @ResponseBody
-    public JSONObject getOne(@PathVariable String id){
+    public JSONObject getOne(@PathVariable String username){
 
         JSONObject jsonObject = new JSONObject();
 
         jsonObject.put("code",0);
         jsonObject.put("msg","");
-        jsonObject.put("data",mineService.selectMine(id));
+        jsonObject.put("data",mineService.selectMine(username));
 
         return jsonObject;
     }
@@ -57,18 +60,25 @@ public class VisitWebsocker {
      * 获取个人信息
      * @return
      */
-    @GetMapping("/all/{id}")
+    @GetMapping("/all/{username}")
     @ResponseBody
-    public JSONObject getAll(@PathVariable String id){
+    public JSONObject getAll(@PathVariable String username){
 
         JSONObject jsonObject = new JSONObject();
 
         //查询个人信息
-        Mine mine = mineService.selectMine(id);
+        Mine mine = mineService.selectMine(username.replaceAll("\"",""));
+
         //查询分组
-        List<Grouping> groupings = mineService.selectGroupings(id);
+        List<Grouping> groupings = null;
+
         //查询群
-        List<Group> groups = mineService.selectGroups(id);
+        List<Group> groups = null;
+
+        if(mine != null){
+            groupings = mineService.selectGroupings(mine.getId());
+             groups = mineService.selectGroups(mine.getId());
+        }
 
         jsonObject.put("code",0);
         jsonObject.put("msg","");
@@ -119,6 +129,7 @@ public class VisitWebsocker {
                     continue;
                 case "news":
                     map.put("news",values.get("news").toString());
+                    maps.add(map);
                     continue;
                 default:
                     map.put("text",values.get("text").toString());

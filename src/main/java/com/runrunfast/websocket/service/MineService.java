@@ -1,9 +1,9 @@
 package com.runrunfast.websocket.service;
 
-import com.baomidou.mybatisplus.service.IService;
 import com.runrunfast.websocket.pojo.Group;
 import com.runrunfast.websocket.pojo.Grouping;
 import com.runrunfast.websocket.pojo.Mine;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -13,14 +13,14 @@ import java.util.List;
  * @Description: <P>添加说明</P>
  * @Date: <P>CREATE IS 2018/9/21 16:52</P>
  **/
-public interface MineService extends IService<Mine> {
+public interface MineService {
 
     /**
      * 查询个人信息
      * @param id
      * @return
      */
-    Mine selectMine(String id);
+    Mine selectMine(String username);
 
     /**
      * 个人分组查询
@@ -49,4 +49,9 @@ public interface MineService extends IService<Mine> {
      * @return
      */
     List<Mine> getGroupMembers(String id);
+
+    /**
+     * 根据账号查询个人信息
+     */
+    Mine selectMineNumber(@Param("number") String number);
 }
