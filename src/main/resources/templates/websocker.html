@@ -18,7 +18,8 @@
 
         //判断当前浏览器是否支持WebSocket
         if('WebSocket' in window){
-            websocket = new WebSocket("ws://localhost:8080/websocket/"+username);
+            //这里我用的是nginx+域名访问的，所以采用wss连接方式
+            websocket = new WebSocket("wss://118.126.104.111:8082/webIM/websocket/"+username);
         }
         else{
             alert('您的浏览器不支持websocker')

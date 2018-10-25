@@ -3,8 +3,8 @@
 spring:
   datasource:
       type: com.alibaba.druid.pool.DruidDataSource
-      driver-class-name: com.mysql.jdbc.Driver
-      url: jdbc:mysql://localhost:3306/websocker?useUnicode=true&characterEncoding=utf8&allowMultiQueries=true
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: jdbc:mysql://118.126.104.111:3306/webIM?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=GMT%2B8
       username: root
       password: zzm030010
       druid:
@@ -58,5 +58,10 @@ mybatis:
 logging:
   level:
     com.web.prepay: debug
-  file: /websoker.log
+  file: /usr/local/tomcat8/logs/webIM/webIM.log
   root: INFO
+server:
+  port: 8080
+  servlet:
+    context-path: /webIM
+

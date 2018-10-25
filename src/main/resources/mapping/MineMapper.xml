@@ -79,8 +79,8 @@
     </select>
 
     <!--根据账号查询单个账户信息-->
-    <select id="selectMineNumber" parameterType="java.lang.StringBuffer" resultMap="myMessageResultMap">
-        select <include refid="base_column_list"/> from my_message where my_message.number=#{number,jdbcType=VARCHAR}
+    <select id="selectMineNumber" parameterType="java.lang.String" resultMap="myMessageResultMap">
+        select <include refid="base_column_list"/>,number,password from my_message where my_message.number=#{number,jdbcType=VARCHAR}
     </select>
 
 </mapper>
